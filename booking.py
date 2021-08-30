@@ -41,15 +41,15 @@ class booking():
         search_page = soup_search.find_all(
             "a", class_="rlp-main-pagination__btn-txt")
 
-        # 取搜尋頁面總頁數 跑回圈用
+        # 取搜尋頁面總頁數 跑迴圈用
         search_last_page = int(search_page[len(search_page)-1].string)
 
         return search_last_page
 
-    # 跑回圈將搜尋飯店客戶url 整理成一維 list
+    # 跑迴圈將搜尋飯店客戶url 整理成一維 list
     def loop_page_search(self, url, page):
         # ;offset=30&
-        # 搜尋頁面一頁30 筆
+        # 搜尋頁面，一頁30筆
         hotel_name = []
         search_result_comment_url = []
         plusoffset = 0
@@ -112,7 +112,7 @@ class booking():
                     "\D", "", comment_total_count_string)
 
                 o = []
-                # 跑分頁回圈
+                # 跑分頁迴圈
                 for page in range(round(int(comment_total_count)/75)):
 
                     if(int(page) == 0):
