@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 """
-.. module:: booking.com網站爬蟲
+.. module:: booking.com 網站爬蟲
 .. name:: zero
-.. 針對booking 評論搜尋頁面結果，不斷去爬所有資料
+.. 針對 booking 高雄地區評論搜尋頁面結果，不斷去爬所有飯店評論資料
 """
 
 from bs4 import BeautifulSoup
@@ -17,13 +17,11 @@ import urllib3
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-
 class booking():
 
     def __init__(self):
         # 被擋掉的參數
-        self.headers = {
-            'user-agent': 'Mozilla/5.0 (Macintosh Intel Mac OS X 10_13_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36'}
+        self.headers = {'user-agent': 'Mozilla/5.0 (Macintosh Intel Mac OS X 10_13_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36'}
         self.requests = requests
         self.BeautifulSoup = BeautifulSoup
         self.itertools = itertools
@@ -31,211 +29,192 @@ class booking():
         self.np = np
         return
 
-    def get_search_page(self, url):
+    def get_search_page_count(self, url):
 
         res = self.requests.get(url)
 
-        soup_search = self.BeautifulSoup(res.text, 'lxml')  # 以上是網路獲取html
+        soupSearch = self.BeautifulSoup(res.text, 'lxml')  # 以上是網路獲取html
 
         # 搜尋頁面總頁數
-        search_page = soup_search.find_all(
-            "a", class_="rlp-main-pagination__btn-txt")
+        searchPages = soupSearch.find_all("a", class_="rlp-main-pagination__btn-txt")
 
         # 取搜尋頁面總頁數 跑迴圈用
-        search_last_page = int(search_page[len(search_page)-1].string)
+        searchLastPageCount = int(searchPages[len(searchPages)-1].string)
 
-        return search_last_page
+        return searchLastPageCount
 
-    # 跑迴圈將搜尋飯店客戶url 整理成一維 list
-    def loop_page_search(self, url, page):
+    # 跑迴圈將搜尋飯店評論的 url 整理成一維 list
+    def loop_search_hotel_comments(self, url, pageCount):
         # ;offset=30&
         # 搜尋頁面，一頁30筆
-        hotel_name = []
-        search_result_comment_url = []
-        plusoffset = 0
-        # int(page)
-        for i in range(int(page)):
+        hotelNames = []
+        hotelCommentUrls = []
+        plusOffset = 0
+        searchUrl = ""
+        
+        for i in range(int(pageCount)):
             if(i == 0):
-                search_url = url
+                searchUrl = url
             else:
-                plusoffset = plusoffset + 30
-                search_url = url+str(";offset=")+str(plusoffset)+str("&")
+                plusOffset = plusOffset + 30
+                searchUrl = url+str(";offset=")+str(plusOffset)+str("&")
 
-            loop_page_search_get = self.requests.get(search_url)
+            loopPageSearchGet = self.requests.get(searchUrl)
 
-            search_result = self.BeautifulSoup(
-                loop_page_search_get.text, 'lxml')  # 以上是網路獲取html
+            searchResult = self.BeautifulSoup(loopPageSearchGet.text, 'lxml')  # 以上是網路獲取html
 
             # 搜尋頁面飯店名稱
-            hotel_name.append(search_result.find_all(
-                "a", class_="rlp-main-hotel__hotel-name-link"))
+            hotelNames.append(searchResult.find_all("a", class_="rlp-main-hotel__hotel-name-link"))
 
-            # 搜尋頁面擷取客戶評論url
-            search_result_comment_url.append(search_result.find_all(
-                "li", class_="rlp-main-hotel-review__review_link"))
+            # 搜尋頁面飯店評論 url
+            hotelCommentUrls.append(searchResult.find_all("li", class_="rlp-main-hotel-review__review_link"))
 
-        # 利用套件itertools 合併一維 list
+        # 利用套件 itertools 合併一維 list
         return [
-            list(self.itertools.chain.from_iterable(search_result_comment_url)),
-            list(self.itertools.chain.from_iterable(hotel_name)),
+            list(self.itertools.chain.from_iterable(hotelCommentUrls)),
+            list(self.itertools.chain.from_iterable(hotelNames)),
         ]
 
-    # 正式爬蟲顧客資訊
-    def loop_formal_reptile＿comment(self, url＿list):
+    # 正式爬蟲顧客對飯店的評論資訊
+    def loop_formal_reptile_hotel＿comments(self, hotelComments):
 
-        list_comment = {}
-        title_url = "https://www.booking.com/"
+        commentList = {}
+        titleUrl = "https://www.booking.com/"
         key = 0
+       
+        # hotelComments[0] = hotel list url
+        # hotelComments[1] = hotel list name 
 
-        for url_lists in url＿list[0]:
+        for url in hotelComments[0]:
 
             key = key + 1
 
-            list_comment[key] = []
+            commentList[key] = []
 
-            hotel_url = title_url + \
-                str(url_lists.a['href']) + \
-                str('?r_lang=zh-tw;rows=75&')  # all zh-tw
+            hotelUrl = titleUrl + str(url.a['href']) + str('?r_lang=zh-tw;rows=75&')  # all zh-tw
 
             try:
 
                 # 以上是網路獲取html
-                hotel_res = self.requests.get(
-                    hotel_url, headers=self.headers, timeout=5)
+                hotel = self.requests.get(hotelUrl, headers=self.headers, timeout=5)
 
-                search_hotel_result = self.BeautifulSoup(
-                    hotel_res.text, 'lxml')
-                # 取飯店總評論比數
-                comment_total_count_string = search_hotel_result.find(
-                    "p", class_="review_list_score_count").string
-                comment_total_count = self.re.sub(
-                    "\D", "", comment_total_count_string)
+                searchHotelResult = self.BeautifulSoup(hotel.text, 'lxml')
 
+                # 取得飯店總評論比數
+                commentTotalCountString = searchHotelResult.find("p", class_="review_list_score_count").string
+                commentTotalCount = self.re.sub("\D", "", commentTotalCountString)
+                
                 o = []
                 # 跑分頁迴圈
-                for page in range(round(int(comment_total_count)/75)):
+                for page in range(round(int(commentTotalCount)/75)):
 
                     if(int(page) == 0):
-                        get_url = hotel_url
+                        sendUrl = hotelUrl
                     else:
                         if(int(page) != 1):
-                            get_url = hotel_url+str(";page=")+str(int(page))
+                            sendUrl = hotelUrl+str(";page=")+str(int(page))
                         else:
                             continue
 
-                    loop_hotel_page_res = self.requests.get(
-                        str(get_url), headers=self.headers, verify=False)
-                    loop_hotel_page_result = self.BeautifulSoup(
-                        loop_hotel_page_res.text, 'lxml')
+                    loopHotelPageRes = self.requests.get(str(sendUrl), headers=self.headers, verify=False)
+                    loopHotelPageResult = self.BeautifulSoup(loopHotelPageRes.text, 'lxml')
 
-                    print(get_url)
+                    print(sendUrl)
 
                     # 留言姓名
-                    comment_name = [name.get_text().replace('\n', "").replace('\r', "") for name in loop_hotel_page_result.find_all(
-                        "p", class_="reviewer_name")]
+                    commentNames = [name.get_text().replace('\n', "").replace('\r', "") for name in loopHotelPageResult.find_all("p", class_="reviewer_name")]
 
                     # 國籍
-                    comment_country = [country.get_text().strip('\n') for country in loop_hotel_page_result.find_all(
-                        "span", class_="reviewer_country")]
+                    commentCountries = [country.get_text().strip('\n') for country in loopHotelPageResult.find_all("span", class_="reviewer_country")]
 
                     # 留言推薦
-                    comment_user_review_count = [self.re.sub("\D", "", item_user_review_count.get_text().strip(
-                        '\n')) for item_user_review_count in loop_hotel_page_result.find_all("div", class_="review_item_user_review_count")]
+                    commentUserReviews = [self.re.sub("\D", "", item_user_review_count.get_text().strip('\n')) for item_user_review_count in loopHotelPageResult.find_all("div", class_="review_item_user_review_count")]
 
                     # 評分
-                    comment_review_score_badge = [score_val.get_text().replace('\n', "").replace(
-                        '\r', "") for score_val in loop_hotel_page_result.find_all("div", class_="review_item_header_score_container")]
+                    commentReviewScoreBadges = [score_val.get_text().replace('\n', "").replace('\r', "") for score_val in loopHotelPageResult.find_all("div", class_="review_item_header_score_container")]
 
                     # 留言標題
-                    comment_content_container = [content_container.get_text().replace('\n', "").replace(
-                        '\r', "") for content_container in loop_hotel_page_result.find_all("div", class_="review_item_header_content_container")]
+                    commentContentContainers = [content_container.get_text().replace('\n', "").replace('\r', "") for content_container in loopHotelPageResult.find_all("div", class_="review_item_header_content_container")]
 
                     # 填寫日期
-                    insertdate = [self.re.sub("\D", "", insert_date.get_text(
-                    )) for insert_date in loop_hotel_page_result.find_all("p", class_="review_item_date")]
+                    insertDates = [self.re.sub("\D", "", insert_date.get_text()) for insert_date in loopHotelPageResult.find_all("p", class_="review_item_date")]
 
                     # 標籤
-                    tag = loop_hotel_page_result.find_all(
-                        "ul", class_="review_item_info_tags")
+                    infoTags = loopHotelPageResult.find_all("ul", class_="review_item_info_tags")
 
                     # 評語
-                    comment_content = loop_hotel_page_result.find_all(
-                        "div", class_="review_item_review_content")
+                    commentContents = loopHotelPageResult.find_all("div", class_="review_item_review_content")
 
                     # 到後面沒資料停止
-                    if(len(comment_name) == 0):
+                    if(len(commentNames) == 0):
                         break
                     else:
                         # 迴圈跑
                         index = 0  # 跑其他list 資料index
-                        for comment_contents in comment_content:
+                        for commentContent in commentContents:
                             z = len(o)  # 尋找相同陣列 key
                             # 第一次的陣列 append
-                            o.append([comment_name[index]])  # 姓名
-                            o[z].append(comment_country[index])  # 國籍
+                            o.append([commentNames[index]])  # 姓名
+                            o[z].append(commentCountries[index])  # 國籍
+                            o[z].append(commentUserReviews[index])  # 推薦數
+                            o[z].append(commentReviewScoreBadges[index])  # 評分
                             o[z].append(
-                                comment_user_review_count[index])  # 推薦數
-                            o[z].append(
-                                comment_review_score_badge[index])  # 評分
-                            o[z].append(
-                                comment_content_container[index])  # 留言標題
-                            o[z].append(insertdate[index])  # 時間
+                                commentContentContainers[index])  # 留言標題
+                            o[z].append(insertDates[index])  # 時間
 
                             # 標籤住房
-                            tags = tag[index].find_all(
-                                "li", class_='review_info_tag')
-                            tag_vla_list = [tag_val.get_text().replace('•', "").replace(
-                                '\n', "").replace('\r', "") for tag_val in tags]
-                            tag_vla = ",".join(tag_vla_list)
-                            o[z].append(tag_vla)
+                            tags = infoTags[index].find_all("li", class_='review_info_tag')
+                            tagVals = [tagVal.get_text().replace('•', "").replace('\n', "").replace('\r', "") for tagVal in tags]
+                            tagVaL = ",".join(tagVals)
+                            o[z].append(tagVaL)
 
                             # 壞留言
-                            if(comment_contents.find("p", class_='review_neg') == None):
-                                bad_val = ""
+                            badVal = ""
+                            if(commentContent.find("p", class_='review_neg') == None):
+                                badVal = ""
                             else:
-                                bad_val = comment_contents.find(
-                                    "p", class_='review_neg').get_text().replace('\n', "").replace('\r', "")
-                            o[z].append(bad_val)
+                                badVal = commentContent.find("p", class_='review_neg').get_text().replace('\n', "").replace('\r', "")
+                            o[z].append(badVal)
 
                             # 好留言
-                            if(comment_contents.find("p", class_='review_pos') == None):
-                                good_val = ""
+                            goodVal = ""
+                            if(commentContent.find("p", class_='review_pos') == None):
+                                goodVal = ""
                             else:
-                                good_val = comment_contents.find(
-                                    "p", class_='review_pos').get_text().replace('\n', "").replace('\r', "")
-                            o[z].append(good_val)
+                                goodVal = commentContent.find("p", class_='review_pos').get_text().replace('\n', "").replace('\r', "")
+                            o[z].append(goodVal)
 
                             index = index + 1
 
-                list_comment[key].append(o)
+                commentList[key].append(o)
 
             except self.requests.exceptions.RequestException as e:
 
                 print(e)
 
-        return [list_comment, [hotel.get_text() for hotel in url＿list[1]]]
+        return [commentList, [hotel.get_text() for hotel in hotelComments[1]]]
 
 
 # 以搜尋結果面網址
-Complete_url = "https://www.booking.com/reviews/region/kaohsiung.zh-tw.html"
+searchUrl = "https://www.booking.com/reviews/region/kaohsiung.zh-tw.html"
 
 if __name__ == "__main__":
 
     booking = booking()
 
-    search_page = booking.get_search_page(Complete_url)
-    search_comment_url = booking.loop_page_search(Complete_url, search_page)
-    result = booking.loop_formal_reptile＿comment(search_comment_url)
-
-    path = ''# 儲存路徑
+    pageCount = booking.get_search_page_count(searchUrl)
+    hotelComments = booking.loop_search_hotel_comments(searchUrl, pageCount)
+    result = booking.loop_formal_reptile_hotel＿comments(hotelComments)
+    
+    path = ''  # 儲存路徑
     key = 0
     # 開始匯出 csv
     for i in result[0]:
         for data in result[0][i]:
-            filename = path + str(result[1][key]) + '.csv'
+            fileName = path + str(result[1][key]) + '.csv'
             key = key + 1
-            with open(filename, 'w', encoding="utf_8_sig", newline="") as csvfile:
-                writer = csv.writer(csvfile)
+            with open(fileName, 'w', encoding="utf_8_sig", newline="") as csvFile:
+                writer = csv.writer(csvFile)
                 writer.writerow(
                     ["姓名", "國籍", "留言數", "評分", "留言標題", "住宿日期", "標籤", "壞留言", "好留言"])
                 for lists in data:
