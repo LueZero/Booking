@@ -128,16 +128,16 @@ class booking():
                     commentCountries = [country.get_text().strip('\n') for country in loopHotelPageResult.find_all("span", class_="reviewer_country")]
 
                     # 留言推薦
-                    commentUserReviews = [self.re.sub("\D", "", item_user_review_count.get_text().strip('\n')) for item_user_review_count in loopHotelPageResult.find_all("div", class_="review_item_user_review_count")]
+                    commentUserReviews = [self.re.sub("\D", "", review.get_text().strip('\n')) for review in loopHotelPageResult.find_all("div", class_="review_item_user_review_count")]
 
                     # 評分
-                    commentReviewScoreBadges = [score_val.get_text().replace('\n', "").replace('\r', "") for score_val in loopHotelPageResult.find_all("div", class_="review_item_header_score_container")]
+                    commentReviewScoreBadges = [score.get_text().replace('\n', "").replace('\r', "") for score in loopHotelPageResult.find_all("div", class_="review_item_header_score_container")]
 
                     # 留言標題
-                    commentContentContainers = [content_container.get_text().replace('\n', "").replace('\r', "") for content_container in loopHotelPageResult.find_all("div", class_="review_item_header_content_container")]
+                    commentContentHeaders = [header.get_text().replace('\n', "").replace('\r', "") for header in loopHotelPageResult.find_all("div", class_="review_item_header_content_container")]
 
                     # 填寫日期
-                    insertDates = [self.re.sub("\D", "", insert_date.get_text()) for insert_date in loopHotelPageResult.find_all("p", class_="review_item_date")]
+                    insertDates = [self.re.sub("\D", "", date.get_text()) for date in loopHotelPageResult.find_all("p", class_="review_item_date")]
 
                     # 標籤
                     infoTags = loopHotelPageResult.find_all("ul", class_="review_item_info_tags")
@@ -158,31 +158,30 @@ class booking():
                             o[z].append(commentCountries[index])  # 國籍
                             o[z].append(commentUserReviews[index])  # 推薦數
                             o[z].append(commentReviewScoreBadges[index])  # 評分
-                            o[z].append(
-                                commentContentContainers[index])  # 留言標題
+                            o[z].append(commentContentHeaders[index])  # 留言標題
                             o[z].append(insertDates[index])  # 時間
 
                             # 標籤住房
                             tags = infoTags[index].find_all("li", class_='review_info_tag')
-                            tagVals = [tagVal.get_text().replace('•', "").replace('\n', "").replace('\r', "") for tagVal in tags]
-                            tagVaL = ",".join(tagVals)
-                            o[z].append(tagVaL)
+                            tagValues = [tag.get_text().replace('•', "").replace('\n', "").replace('\r', "") for tag in tags]
+                            tagValue = ",".join(tagValues)
+                            o[z].append(tagValue)
 
                             # 壞留言
-                            badVal = ""
+                            badValue = ""
                             if(commentContent.find("p", class_='review_neg') == None):
-                                badVal = ""
+                                badValue = ""
                             else:
-                                badVal = commentContent.find("p", class_='review_neg').get_text().replace('\n', "").replace('\r', "")
-                            o[z].append(badVal)
+                                badValue = commentContent.find("p", class_='review_neg').get_text().replace('\n', "").replace('\r', "")
+                            o[z].append(badValue)
 
                             # 好留言
-                            goodVal = ""
+                            goodValue = ""
                             if(commentContent.find("p", class_='review_pos') == None):
-                                goodVal = ""
+                                goodValue = ""
                             else:
-                                goodVal = commentContent.find("p", class_='review_pos').get_text().replace('\n', "").replace('\r', "")
-                            o[z].append(goodVal)
+                                goodValue = commentContent.find("p", class_='review_pos').get_text().replace('\n', "").replace('\r', "")
+                            o[z].append(goodValue)
 
                             index = index + 1
 
