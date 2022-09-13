@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 """
-.. module:: booking.com 網路爬蟲
+.. module:: 網路爬蟲 Booking.com
 .. name:: zero
-.. booking 高雄地區推薦飯店 (命令模式版)
+.. Booking.com 高雄地區推薦飯店 (命令模式版)
 """
 
 from bs4 import BeautifulSoup
@@ -20,7 +20,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 load_dotenv()
 
-class booking():
+class Booking():
 
     def __init__(self):
         # 被擋掉的參數
@@ -202,7 +202,7 @@ searchUrl = "https://www.booking.com/reviews/region/kaohsiung.zh-tw.html"
 
 if __name__ == "__main__":
 
-    booking = booking()
+    booking = Booking()
 
     key = 0
 

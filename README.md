@@ -1,6 +1,6 @@
-# booking 高雄地區推薦飯店 (命令模式版)
+# Booking.com 高雄地區推薦飯店 (命令模式版)
 
-使用爬蟲技術針對 booking.com 高雄地區飯店評論資料。並將爬蟲結果儲存為`.csv檔案`。
+使用爬蟲技術針對 Booking.com 高雄地區飯店評論資料。並將爬蟲結果儲存為`.csv檔案`。
 
 ## 爬蟲對象:
 
@@ -12,4 +12,4 @@
 
 2. Install dependent packages : `pip or pip3 install -r requirements.txt`.
 
-3. Command line run `python booking.py` or `python3 booking.py`.
+3. Command line run `python main.py` or `python3 main.py`.
