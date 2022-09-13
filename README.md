@@ -1,14 +1,15 @@
-## booking 高雄地區推薦飯店
+# booking 高雄地區推薦飯店 (命令模式版)
 
-針對 booking 高雄地區評論搜尋頁面結果，不斷去爬所有飯店評論資料。並將結果儲存為csv檔案。
+使用爬蟲技術針對 booking.com 高雄地區飯店評論資料。並將爬蟲結果儲存為`.csv檔案`。
 
-### 爬蟲對象:
+## 爬蟲對象:
+
 -  [booking](https://www.booking.com/reviews/region/kaohsiung.zh-tw.html)
 
-### 安裝套件:
+## Initialization:
 
-- pip install bs4 
-- pip install lxml
-- pip install requests 
-- pip install regex
-- pip install numpy
+1. Copy the env example to .env and set relevant parameters.
+
+2. Install dependent packages : `pip or pip3 install -r requirements.txt`.
+
+3. Command line run `python booking.py` or `python3 booking.py`.

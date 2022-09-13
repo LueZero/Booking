@@ -7,15 +7,18 @@
 """
 
 from bs4 import BeautifulSoup
+from dotenv import load_dotenv
+import os
 import requests
 import csv
 import itertools
 import re
 import numpy as np
-
 import urllib3
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+load_dotenv()
 
 class booking():
 
@@ -201,12 +204,15 @@ if __name__ == "__main__":
 
     booking = booking()
 
+    key = 0
+
+    # 儲存路徑
+    path = os.getenv("SAVE_PATH")
+    
     pageCount = booking.get_search_page_count(searchUrl)
     hotelComments = booking.loop_search_hotel_comments(searchUrl, pageCount)
     result = booking.loop_formal_reptile_hotel＿comments(hotelComments)
-    
-    path = ''  # 儲存路徑
-    key = 0
+   
     # 開始匯出 csv
     for i in result[0]:
         for data in result[0][i]:
@@ -214,7 +220,6 @@ if __name__ == "__main__":
             key = key + 1
             with open(fileName, 'w', encoding="utf_8_sig", newline="") as csvFile:
                 writer = csv.writer(csvFile)
-                writer.writerow(
-                    ["姓名", "國籍", "留言數", "評分", "留言標題", "住宿日期", "標籤", "壞留言", "好留言"])
+                writer.writerow(["姓名", "國籍", "留言數", "評分", "留言標題", "住宿日期", "標籤", "壞留言", "好留言"])
                 for lists in data:
                     writer.writerow(lists)
