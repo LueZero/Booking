@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 """
-.. module:: booking.com 網站爬蟲
+.. module:: booking.com 網路爬蟲
 .. name:: zero
-.. 針對 booking 高雄地區評論搜尋頁面結果，不斷去爬所有飯店評論資料
+.. booking 高雄地區推薦飯店 (命令模式版)
 """
 
 from bs4 import BeautifulSoup
