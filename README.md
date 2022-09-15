@@ -12,4 +12,6 @@
 
 2. Install dependent packages : `pip or pip3 install -r requirements.txt`.
 
-3. Command line run `python main.py` or `python3 main.py`.
+## Execution
+
+1. Command line run `python main.py` or `python3 main.py`.
